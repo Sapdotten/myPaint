@@ -5,18 +5,43 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QPushButton>
+#include <QSlider>
+#include <QLabel>
 #include "include/canvas.h"
 #include "include/palette.h"
 
 
 class BrushControl : public QWidget {
+
 public:
-    BrushControl(QWidget *parent = nullptr) : QWidget(parent) {
-        // Здесь можно разместить элементы управления кистью
+    explicit BrushControl(Canvas *canvas, QWidget *parent = nullptr)
+        : QWidget(parent), canvas(canvas) {
         QVBoxLayout *layout = new QVBoxLayout(this);
-        QPushButton *button = new QPushButton("Настроить кисть", this);
-        layout->addWidget(button);
+
+        // Заголовок для настройки толщины
+        QLabel *label = new QLabel("Толщина кисти:", this);
+        layout->addWidget(label);
+
+        // Ползунок для изменения толщины
+        QSlider *slider = new QSlider(Qt::Horizontal, this);
+        slider->setRange(1, 50);  // Минимальная и максимальная толщина кисти
+        slider->setValue(canvas->getBrushThickness()); // Текущее значение толщины
+        layout->addWidget(slider);
+
+        // Отображение текущего значения толщины
+        QLabel *thicknessLabel = new QLabel(QString::number(canvas->getBrushThickness()), this);
+        layout->addWidget(thicknessLabel);
+
+        // Подключаем сигнал от ползунка к изменению толщины кисти
+        connect(slider, &QSlider::valueChanged, this, [this, thicknessLabel, canvas](int value) {
+    canvas->setBrushThickness(value); // Устанавливаем новую толщину
+    thicknessLabel->setText(QString::number(value)); // Обновляем отображение толщины
+});
+
     }
+
+private:
+    Canvas *canvas;
 };
 
 class InstrumentsControl : public QWidget {
@@ -70,7 +95,8 @@ class InstrumentsAndBrushControl : public QWidget {
     InstrumentsAndBrushControl(Canvas *canvas, QWidget *parent = nullptr) : QWidget(parent) {
         QVBoxLayout *layout = new QVBoxLayout(this);
 
-        BrushControl *brushControl = new BrushControl(this);
+        BrushControl *brushControl = new BrushControl(canvas, this);
+        layout->addWidget(brushControl);
         InstrumentsControl *instrumentsControl = new InstrumentsControl(canvas, this);
         PaletteControl *paletteControl = new PaletteControl(canvas, this);
 

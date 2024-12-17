@@ -15,6 +15,7 @@ public:
     void setBrushTool(Brush::ToolType toolType); // Устанавливает текущий инструмент
     void setBrushThickness(int thickness);
     void setToolType(Brush::ToolType tool);
+    int getBrushThickness() const;
 
 protected:
     void paintEvent(QPaintEvent *event) override;

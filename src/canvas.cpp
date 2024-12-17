@@ -22,6 +22,11 @@ void Canvas::setBrushThickness(int thickness) {
     brush.setThickness(thickness);
 }
 
+int Canvas::getBrushThickness() const {
+    return brush.getThickness();
+}
+
+
 void Canvas::paintEvent(QPaintEvent *event) {
     QPainter painter(this);
     painter.drawImage(0, 0, layer->getImage());
