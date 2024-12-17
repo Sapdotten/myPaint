@@ -14,6 +14,14 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Widgets)
 
 add_executable(kursach
         main.cpp
+        include/brush.h
+        include/canvas.h
+        include/layer.h
+        src/layer.cpp
+        src/brush.cpp
+        src/canvas.cpp
+        include/palette.h
+        src/palette.cpp
 )
 
 target_link_libraries(kursach Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Widgets)
