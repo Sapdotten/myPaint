@@ -20,14 +20,30 @@ public:
 };
 
 class InstrumentsControl : public QWidget {
-    // вообще здесь потом будет список иснтрументов и, наверное, эта хрень будет делать setTool
 public:
-    InstrumentsControl(QWidget *parent = nullptr) : QWidget(parent) {
+    InstrumentsControl(Canvas *canvas, QWidget *parent = nullptr) : QWidget(parent), canvas(canvas) {
         QVBoxLayout *layout = new QVBoxLayout(this);
-        QPushButton *button = new QPushButton("Выбрать инструмент", this);
-        layout->addWidget(button);
+
+        QPushButton *brushButton = new QPushButton("Кисть", this);
+        QPushButton *eraserButton = new QPushButton("Ластик", this);
+
+        layout->addWidget(brushButton);
+        layout->addWidget(eraserButton);
+
+        connect(brushButton, &QPushButton::clicked, this, [this, canvas]() {
+    canvas->setToolType(Brush::BrushTool);
+});
+
+        connect(eraserButton, &QPushButton::clicked, this, [this, canvas]() {
+            canvas->setToolType(Brush::EraserTool);
+        });
+
     }
+
+private:
+    Canvas *canvas;
 };
+
 
 class PaletteControl : public QWidget {
 public:
@@ -53,14 +69,16 @@ class InstrumentsAndBrushControl : public QWidget {
     public:
     InstrumentsAndBrushControl(Canvas *canvas, QWidget *parent = nullptr) : QWidget(parent) {
         QVBoxLayout *layout = new QVBoxLayout(this);
+
         BrushControl *brushControl = new BrushControl(this);
-        InstrumentsControl *instrumentsControl = new InstrumentsControl(this);
+        InstrumentsControl *instrumentsControl = new InstrumentsControl(canvas, this);
         PaletteControl *paletteControl = new PaletteControl(canvas, this);
+
         layout->addWidget(paletteControl);
         layout->addWidget(brushControl);
         layout->addWidget(instrumentsControl);
-
     }
+
 };
 
 class LayerControl : public QWidget {

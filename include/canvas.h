@@ -11,12 +11,16 @@ public:
     explicit Canvas(QWidget *parent = nullptr);
     ~Canvas() override = default;
 
-    void setBrushColor(const QColor &color); // Метод для изменения цвета кисти
+    void setBrushColor(const QColor &color);
+    void setBrushTool(Brush::ToolType toolType); // Устанавливает текущий инструмент
+    void setBrushThickness(int thickness);
+    void setToolType(Brush::ToolType tool);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
 
 private:
     Layer *layer;
@@ -26,5 +30,4 @@ private:
 
     void drawLineTo(const QPoint &endPoint);
 };
-
 #endif // CANVAS_H
