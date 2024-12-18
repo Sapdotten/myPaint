@@ -1,20 +1,38 @@
-//
-// Created by Alexandra on 03.12.2024.
-//
 #include "../include/layer.h"
-#include <QPainter>
 
-Layer::Layer(int width, int height)
-    : image(width, height, QImage::Format_ARGB32) {
-    image.fill(Qt::white);
+Layer::Layer(int width, int height, const QString &name)
+    : image(width, height, QImage::Format_ARGB32_Premultiplied),
+      visible(true), name(name) {
+    image.fill(Qt::transparent); // Прозрачный фон по умолчанию
 }
 
 void Layer::drawPixel(const QPoint &point, const QColor &color, int thickness) {
     QPainter painter(&image);
-    painter.setPen(QPen(color, thickness, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.setRenderHint(QPainter::Antialiasing, true);
+
+    QPen pen(color);
+    pen.setWidth(thickness);
+    painter.setPen(pen);
+
     painter.drawPoint(point);
 }
 
-QImage &Layer::getImage(){
+QImage& Layer::getImage() {
     return image;
+}
+
+bool Layer::isVisible() const {
+    return visible;
+}
+
+void Layer::setVisible(bool visibility) {
+    visible = visibility;
+}
+
+QString Layer::getName() const {
+    return name;
+}
+
+void Layer::setName(const QString &newName) {
+    name = newName;
 }

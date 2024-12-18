@@ -22,6 +22,12 @@ add_executable(kursach
         src/canvas.cpp
         include/palette.h
         src/palette.cpp
+        include/shape.h
+        src/shape.cpp
+        include/lineshape.h
+        include/rectangleshape.h
+        include/circleshape.h
+        include/triangleshape.h
 )
 
 target_link_libraries(kursach Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Widgets)

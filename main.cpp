@@ -7,12 +7,12 @@
 #include <QPushButton>
 #include <QSlider>
 #include <QLabel>
+#include <QListWidget>
 #include "include/canvas.h"
 #include "include/palette.h"
 
 
 class BrushControl : public QWidget {
-
 public:
     explicit BrushControl(Canvas *canvas, QWidget *parent = nullptr)
         : QWidget(parent), canvas(canvas) {
@@ -24,7 +24,7 @@ public:
 
         // Ползунок для изменения толщины
         QSlider *slider = new QSlider(Qt::Horizontal, this);
-        slider->setRange(1, 50);  // Минимальная и максимальная толщина кисти
+        slider->setRange(1, 50); // Минимальная и максимальная толщина кисти
         slider->setValue(canvas->getBrushThickness()); // Текущее значение толщины
         layout->addWidget(slider);
 
@@ -34,10 +34,9 @@ public:
 
         // Подключаем сигнал от ползунка к изменению толщины кисти
         connect(slider, &QSlider::valueChanged, this, [this, thicknessLabel, canvas](int value) {
-    canvas->setBrushThickness(value); // Устанавливаем новую толщину
-    thicknessLabel->setText(QString::number(value)); // Обновляем отображение толщины
-});
-
+            canvas->setBrushThickness(value); // Устанавливаем новую толщину
+            thicknessLabel->setText(QString::number(value)); // Обновляем отображение толщины
+        });
     }
 
 private:
@@ -46,28 +45,58 @@ private:
 
 class InstrumentsControl : public QWidget {
 public:
-    InstrumentsControl(Canvas *canvas, QWidget *parent = nullptr) : QWidget(parent), canvas(canvas) {
+    explicit InstrumentsControl(Canvas *canvas, QWidget *parent = nullptr) : QWidget(parent), canvas(canvas) {
         QVBoxLayout *layout = new QVBoxLayout(this);
 
+        // Кнопки для инструментов
         QPushButton *brushButton = new QPushButton("Кисть", this);
         QPushButton *eraserButton = new QPushButton("Ластик", this);
 
+        // Кнопки для фигур
+        QPushButton *lineButton = new QPushButton("Прямая", this);
+        QPushButton *rectButton = new QPushButton("Прямоугольник", this);
+        QPushButton *circleButton = new QPushButton("Круг", this);
+        QPushButton *triangleButton = new QPushButton("Треугольник", this);
+
+        // Добавляем кнопки в макет
         layout->addWidget(brushButton);
         layout->addWidget(eraserButton);
+        layout->addWidget(lineButton);
+        layout->addWidget(rectButton);
+        layout->addWidget(circleButton);
+        layout->addWidget(triangleButton);
 
+        // Подключаем сигналы к слотам
         connect(brushButton, &QPushButton::clicked, this, [this, canvas]() {
-    canvas->setToolType(Brush::BrushTool);
-});
+            canvas->setToolType(Brush::BrushTool);
+        });
 
         connect(eraserButton, &QPushButton::clicked, this, [this, canvas]() {
             canvas->setToolType(Brush::EraserTool);
         });
 
+        connect(lineButton, &QPushButton::clicked, this, [this, canvas]() {
+            canvas->setToolType(Brush::LineTool);
+        });
+
+        connect(rectButton, &QPushButton::clicked, this, [this, canvas]() {
+            canvas->setToolType(Brush::RectangleTool);
+        });
+
+        connect(circleButton, &QPushButton::clicked, this, [this, canvas]() {
+            canvas->setToolType(Brush::CircleTool);
+        });
+
+        connect(triangleButton, &QPushButton::clicked, this, [this, canvas]() {
+            canvas->setToolType(Brush::TriangleTool);
+        });
     }
 
 private:
     Canvas *canvas;
 };
+
+
 
 
 class PaletteControl : public QWidget {
@@ -91,7 +120,7 @@ private:
 
 
 class InstrumentsAndBrushControl : public QWidget {
-    public:
+public:
     InstrumentsAndBrushControl(Canvas *canvas, QWidget *parent = nullptr) : QWidget(parent) {
         QVBoxLayout *layout = new QVBoxLayout(this);
 
@@ -104,18 +133,78 @@ class InstrumentsAndBrushControl : public QWidget {
         layout->addWidget(brushControl);
         layout->addWidget(instrumentsControl);
     }
-
 };
 
 class LayerControl : public QWidget {
 public:
-    LayerControl(QWidget *parent = nullptr) : QWidget(parent) {
-        // Здесь можно разместить элементы управления слоями
+    explicit LayerControl(Canvas *canvas, QWidget *parent = nullptr) : QWidget(parent), canvas(canvas) {
         QVBoxLayout *layout = new QVBoxLayout(this);
-        QPushButton *button = new QPushButton("Управление слоями", this);
-        layout->addWidget(button);
+
+        // Кнопка добавления слоя
+        QPushButton *addLayerButton = new QPushButton("Добавить слой", this);
+        layout->addWidget(addLayerButton);
+
+        connect(addLayerButton, &QPushButton::clicked, this, [this, canvas]() {
+            canvas->addLayer("Layer " + QString::number(layerList->count() + 1));
+            updateLayerList();
+        });
+
+        // Список слоев
+        layerList = new QListWidget(this);
+        layout->addWidget(layerList);
+        layerList->setDragDropMode(QAbstractItemView::InternalMove);
+
+        connect(layerList, &QListWidget::currentRowChanged, this, [this, canvas](int index) {
+            canvas->setActiveLayer(index);
+        });
+
+        connect(layerList->model(), &QAbstractItemModel::rowsMoved, this, [this]() {
+        updateCanvasLayerOrder();
+    });
+
+        // Кнопка скрытия/показа слоя
+        QPushButton *toggleVisibilityButton = new QPushButton("Скрыть/Показать", this);
+        layout->addWidget(toggleVisibilityButton);
+
+        connect(toggleVisibilityButton, &QPushButton::clicked, this, [this, canvas]() {
+            int index = canvas->getActiveLayerIndex();
+            canvas->toggleLayerVisibility(index);
+            updateLayerList();
+        });
+
+        setLayout(layout);
+    }
+
+private:
+    Canvas *canvas;
+    QListWidget *layerList;
+
+    void updateLayerList() {
+        layerList->clear();
+        for (const auto &layer: canvas->getLayers()) {
+            layerList->addItem(layer.isVisible() ? layer.getName() : layer.getName() + " (Скрыт)");
+        }
+    }
+    void updateCanvasLayerOrder() {
+        std::vector<Layer> newOrder;
+
+        for (int i = 0; i < layerList->count(); ++i) {
+            QString layerName = layerList->item(i)->text();
+            layerName = layerName.replace(" (Скрыт)", ""); // Убираем метку скрытого слоя
+
+            // Ищем слой с таким именем в текущем порядке
+            for (const auto &layer : canvas->getLayers()) {
+                if (layer.getName() == layerName) {
+                    newOrder.push_back(layer);
+                    break;
+                }
+            }
+        }
+
+        canvas->setLayers(newOrder);
     }
 };
+
 
 class MainWindow : public QMainWindow {
 public:
@@ -135,7 +224,7 @@ public:
         QHBoxLayout *leftLayout = new QHBoxLayout(leftPanel);
 
         InstrumentsAndBrushControl *instrumentsAndBrushControl = new InstrumentsAndBrushControl(canvas, leftPanel);
-        LayerControl *layerControl = new LayerControl(leftPanel);
+        LayerControl *layerControl = new LayerControl(canvas, leftPanel);
 
         leftLayout->addWidget(layerControl);
         leftLayout->addWidget(instrumentsAndBrushControl);
