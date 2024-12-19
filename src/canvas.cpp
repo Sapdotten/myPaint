@@ -126,7 +126,8 @@ void Canvas::setToolType(Brush::ToolType tool) {
 }
 
 void Canvas::addLayer(const QString &name) {
-    layers.emplace_back(width(), height(), name); // Добавление слоя в список
+    static int layerIdCounter = 0;
+    layers.emplace_back(width(), height(), name,layerIdCounter++); // Добавление слоя в список
     activeLayerIndex = layers.size() - 1; // Устанавливаем новый слой как активный
     update();
 }
@@ -147,6 +148,7 @@ const std::vector<Layer> &Canvas::getLayers() const {
 void Canvas::setActiveLayer(int index) {
     if (index >= 0 && index < layers.size()) {
         activeLayerIndex = index;
+        update();
     } else {
         qWarning() << "Index out of bounds";
     }
@@ -164,4 +166,32 @@ void Canvas::setLayers(const std::vector<Layer> &newLayers) {
 void Canvas::setBrushTool(Brush::ToolType toolType) {
     brush.setToolType(toolType);
     update(); // Обновляем холст для применения нового инструмента
+}
+
+void Canvas::removeLayer(int index) {
+    if (index >= 0 && index < layers.size()) {
+        layers.erase(layers.begin() + index); // Удаляем слой
+        if (activeLayerIndex >= layers.size()) {
+            activeLayerIndex = layers.size() - 1; // Корректируем индекс активного слоя
+        }
+        update(); // Перерисовываем холст
+    }
+}
+
+void Canvas::saveToFile() {
+    // Создаём QImage с размерами холста
+    QImage image(this->size(), QImage::Format_RGB32);
+    QPainter painter(&image);
+
+    // Рисуем содержимое холста на изображении
+    render(&painter);
+    painter.end();
+
+    // Открытие диалогового окна для выбора пути и имени файла
+    QString fileName = QFileDialog::getSaveFileName(this, "Сохранить как", "", "Images (*.jpg *.jpeg)");
+
+    if (!fileName.isEmpty()) {
+        // Сохранение изображения в файл в формате JPEG
+        image.save(fileName, "JPEG");
+    }
 }

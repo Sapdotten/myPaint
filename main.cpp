@@ -8,6 +8,7 @@
 #include <QSlider>
 #include <QLabel>
 #include <QListWidget>
+#include <QListWidgetItem>
 #include "include/canvas.h"
 #include "include/palette.h"
 
@@ -97,8 +98,6 @@ private:
 };
 
 
-
-
 class PaletteControl : public QWidget {
 public:
     explicit PaletteControl(Canvas *canvas, QWidget *parent = nullptr) : QWidget(parent), canvas(canvas) {
@@ -121,19 +120,32 @@ private:
 
 class InstrumentsAndBrushControl : public QWidget {
 public:
-    InstrumentsAndBrushControl(Canvas *canvas, QWidget *parent = nullptr) : QWidget(parent) {
+    explicit InstrumentsAndBrushControl(Canvas *canvas, QWidget *parent = nullptr)
+        : QWidget(parent), canvas(canvas) {
         QVBoxLayout *layout = new QVBoxLayout(this);
 
+        // Существующие элементы управления
         BrushControl *brushControl = new BrushControl(canvas, this);
         layout->addWidget(brushControl);
         InstrumentsControl *instrumentsControl = new InstrumentsControl(canvas, this);
         PaletteControl *paletteControl = new PaletteControl(canvas, this);
-
         layout->addWidget(paletteControl);
         layout->addWidget(brushControl);
         layout->addWidget(instrumentsControl);
+
+        // Кнопка для сохранения
+        QPushButton *saveButton = new QPushButton("Сохранить холст", this);
+        layout->addWidget(saveButton);
+
+        connect(saveButton, &QPushButton::clicked, this, [this, canvas]() {
+            canvas->saveToFile(); // Вызов метода сохранения
+        });
     }
+
+private:
+    Canvas *canvas;
 };
+
 
 class LayerControl : public QWidget {
 public:
@@ -158,9 +170,13 @@ public:
             canvas->setActiveLayer(index);
         });
 
-        connect(layerList->model(), &QAbstractItemModel::rowsMoved, this, [this]() {
-        updateCanvasLayerOrder();
-    });
+        connect(layerList, &QListWidget::clicked, this, [this, canvas]() {
+            updateLayerList();
+        });
+
+        connect(layerList->model(), &QAbstractItemModel::rowsMoved, this, [this, canvas]() {
+            updateCanvasLayerOrder();
+        });
 
         // Кнопка скрытия/показа слоя
         QPushButton *toggleVisibilityButton = new QPushButton("Скрыть/Показать", this);
@@ -169,8 +185,20 @@ public:
         connect(toggleVisibilityButton, &QPushButton::clicked, this, [this, canvas]() {
             int index = canvas->getActiveLayerIndex();
             canvas->toggleLayerVisibility(index);
+
             updateLayerList();
         });
+
+        // Кнопка удаления слоя
+        QPushButton *deleteLayerButton = new QPushButton("Удалить слой", this);
+        layout->addWidget(deleteLayerButton);
+
+        connect(deleteLayerButton, &QPushButton::clicked, this, [this, canvas]() {
+            int index = canvas->getActiveLayerIndex();
+            canvas->removeLayer(index);
+            updateLayerList();
+        });
+
 
         setLayout(layout);
     }
@@ -181,18 +209,27 @@ private:
 
     void updateLayerList() {
         layerList->clear();
-        for (const auto &layer: canvas->getLayers()) {
-            layerList->addItem(layer.isVisible() ? layer.getName() : layer.getName() + " (Скрыт)");
+        int activeLayerId = canvas->getLayers()[canvas->getActiveLayerIndex()].getId();
+
+        for (int i = 0; i < canvas->getLayers().size(); ++i) {
+            const auto &layer = canvas->getLayers()[i];
+            QString itemText = layer.isVisible() ? layer.getName() : layer.getName() + " (Скрыт)";
+            auto *item = new QListWidgetItem(itemText, layerList);
+
+            if (layer.getId() == activeLayerId) {
+                item->setBackground(Qt::yellow); // Подсветка активного слоя
+            }
         }
     }
+
     void updateCanvasLayerOrder() {
         std::vector<Layer> newOrder;
+        int activeLayerId = canvas->getLayers()[canvas->getActiveLayerIndex()].getId();
 
         for (int i = 0; i < layerList->count(); ++i) {
             QString layerName = layerList->item(i)->text();
             layerName = layerName.replace(" (Скрыт)", ""); // Убираем метку скрытого слоя
 
-            // Ищем слой с таким именем в текущем порядке
             for (const auto &layer : canvas->getLayers()) {
                 if (layer.getName() == layerName) {
                     newOrder.push_back(layer);
@@ -202,7 +239,16 @@ private:
         }
 
         canvas->setLayers(newOrder);
+
+        // Обновляем индекс активного слоя
+        for (int i = 0; i < newOrder.size(); ++i) {
+            if (newOrder[i].getId() == activeLayerId) {
+                canvas->setActiveLayer(i);
+                break;
+            }
+        }
     }
+
 };
 
 

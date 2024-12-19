@@ -1,8 +1,8 @@
 #include "../include/layer.h"
 
-Layer::Layer(int width, int height, const QString &name)
+Layer::Layer(int width, int height, const QString &name,int id)
     : image(width, height, QImage::Format_ARGB32_Premultiplied),
-      visible(true), name(name) {
+      visible(true), name(name), id(id) {
     image.fill(Qt::transparent); // Прозрачный фон по умолчанию
 }
 
@@ -17,7 +17,7 @@ void Layer::drawPixel(const QPoint &point, const QColor &color, int thickness) {
     painter.drawPoint(point);
 }
 
-QImage& Layer::getImage() {
+QImage &Layer::getImage() {
     return image;
 }
 
@@ -36,3 +36,13 @@ QString Layer::getName() const {
 void Layer::setName(const QString &newName) {
     name = newName;
 }
+
+bool Layer::isActive() const {
+    return active;
+}
+
+void Layer::setActive(bool active) {
+    active = active;
+}
+
+int Layer::getId() const { return id; }

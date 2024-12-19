@@ -23,7 +23,6 @@ add_executable(kursach
         include/palette.h
         src/palette.cpp
         include/shape.h
-        src/shape.cpp
         include/lineshape.h
         include/rectangleshape.h
         include/circleshape.h

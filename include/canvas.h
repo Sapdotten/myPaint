@@ -8,6 +8,7 @@
 #include "RectangleShape.h"
 #include "CircleShape.h"
 #include "TriangleShape.h"
+#include <QFileDialog>
 
 class Canvas : public QWidget {
     Q_OBJECT
@@ -31,13 +32,17 @@ public:
     const std::vector<Layer>& getLayers() const;
     int getActiveLayerIndex() const;
     void setLayers(const std::vector<Layer> &newLayers);
+    void removeLayer(int index);
     // Устанавливает активный слой
+
+    void saveToFile();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
+
 
 private:
     Layer *layer;
