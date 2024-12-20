@@ -137,7 +137,8 @@ public:
         layout->addWidget(paletteControl);
         layout->addWidget(brushControl);
         layout->addWidget(instrumentsControl);
-
+        QPushButton *polylineButton = new QPushButton("Ломаная", this);
+        layout->addWidget(polylineButton);
         QHBoxLayout *zoomLayout = new QHBoxLayout();
         QPushButton *zoomInButton = new QPushButton("Увеличить", this);
         QPushButton *zoomOutButton = new QPushButton("Уменьшить", this);
@@ -172,6 +173,11 @@ public:
             if (!fileName.isEmpty()) {
                 canvas->openImageAsLayer(fileName);
             }
+        });
+
+
+        connect(polylineButton, &QPushButton::clicked, this, [this, canvas]() {
+            canvas->setToolType(Brush::PolylineTool);
         });
     }
 

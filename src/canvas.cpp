@@ -74,6 +74,17 @@ void Canvas::mousePressEvent(QMouseEvent *event) {
             case Brush::FillTool:
                 fillArea(canvasPoint.toPoint(), brush.getColor());
                 break;
+            case Brush::PolylineTool:
+                if (!isDrawingPolyline) {
+                    isDrawingPolyline = true;
+                    polylinePoints.clear();
+                    polylinePoints.append(canvasPoint.toPoint()); // Начальная точка
+                } else {
+                    polylinePoints.append(canvasPoint.toPoint()); // Добавляем следующую точку
+                }
+
+            update(); // Перерисовываем холст
+            return;
             default:
                 lastPoint = canvasPoint.toPoint();
                 drawing = true;
@@ -139,6 +150,12 @@ void Canvas::paintEvent(QPaintEvent *event) {
 
     if (currentShape) {
         currentShape->draw(painter);
+    }
+    if (isDrawingPolyline && polylinePoints.size() > 1) {
+        painter.setPen(QPen(brush.getColor(), brush.getThickness(), Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        for (int i = 0; i < polylinePoints.size() - 1; ++i) {
+            painter.drawLine(polylinePoints[i], polylinePoints[i + 1]);
+        }
     }
 }
 
@@ -295,5 +312,24 @@ void Canvas::openImageAsLayer(const QString &filePath) {
 
     activeLayerIndex = layers.size() - 1; // Новый слой становится активным
     update(); // Обновляем холст
+}
+void Canvas::mouseDoubleClickEvent(QMouseEvent *event) {
+    if (brush.getToolType() == Brush::PolylineTool && isDrawingPolyline) {
+        if (activeLayerIndex >= 0 && activeLayerIndex < layers.size()) {
+            QImage &image = layers[activeLayerIndex].getImage();
+            QPainter painter(&image);
+            painter.setPen(QPen(brush.getColor(), brush.getThickness(), Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+
+            // Рисуем ломаную на активном слое
+            for (int i = 0; i < polylinePoints.size() - 1; ++i) {
+                painter.drawLine(polylinePoints[i], polylinePoints[i + 1]);
+            }
+        }
+
+        isDrawingPolyline = false;
+        polylinePoints.clear(); // Сбрасываем состояние
+        update();
+    }
+
 }
 

@@ -41,6 +41,7 @@ public:
     void zoomOut();
     int getScaleFactor() const;
     void openImageAsLayer(const QString &filePath);
+    void mouseDoubleClickEvent(QMouseEvent *event);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -53,6 +54,8 @@ protected:
 
 
 private:
+    QVector<QPoint> polylinePoints; // Точки текущей ломаной
+    bool isDrawingPolyline = false; // Флаг рисования ломаной
     void drawLineTo(const QPoint &endPoint);
     void fillArea(const QPoint &start, const QColor &fillColor);
     bool isPointInsideCanvas(const QPoint &point) const;

@@ -12,7 +12,8 @@ public:
         RectangleTool,  // Прямоугольник
         CircleTool,     // Круг
         TriangleTool,    // Треугольник
-        FillTool // Заливка
+        FillTool, // Заливка
+    PolylineTool
     };
 
     Brush(int thickness = 1, QColor color = Qt::black, ToolType toolType = BrushTool)
