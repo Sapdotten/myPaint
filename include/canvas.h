@@ -1,60 +1,78 @@
 #ifndef CANVAS_H
 #define CANVAS_H
+// canvas.h
 #include <QWidget>
+#include <QVector>
+#include <QImage>
+#include <QPointF>
+#include <QStack>
+#include <QFileDialog>
+#include <QMouseEvent>
+#include <QKeyEvent>
+#include <QPainter>
 #include "layer.h"
 #include "brush.h"
-#include <vector>
-#include "LineShape.h"
-#include "RectangleShape.h"
-#include "CircleShape.h"
-#include "TriangleShape.h"
-#include <QFileDialog>
+#include "shape.h"
+#include "rectangleshape.h"
+#include "triangleshape.h"
+#include "circleshape.h"
+#include "lineshape.h"
+#include "QMessageBox"
+#include <QGraphicsDropShadowEffect>
 
 class Canvas : public QWidget {
     Q_OBJECT
-
 public:
     explicit Canvas(QWidget *parent = nullptr);
-    ~Canvas() override = default;
-
 
     void setBrushColor(const QColor &color);
-    void setBrushTool(Brush::ToolType toolType); // Устанавливает текущий инструмент
     void setBrushThickness(int thickness);
-    void setToolType(Brush::ToolType tool);
     int getBrushThickness() const;
-
-    // Управление слоями
+    void setToolType(Brush::ToolType tool);
     void addLayer(const QString &name);
-    void setActiveLayer(int index);
     void toggleLayerVisibility(int index);
-
-    const std::vector<Layer>& getLayers() const;
+    const std::vector<Layer> &getLayers() const;
+    void setActiveLayer(int index);
     int getActiveLayerIndex() const;
     void setLayers(const std::vector<Layer> &newLayers);
     void removeLayer(int index);
-    // Устанавливает активный слой
-
     void saveToFile();
+    void zoomIn();
+    void zoomOut();
+    int getScaleFactor() const;
+    void openImageAsLayer(const QString &filePath);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
+    void wheelEvent(QWheelEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
+    void keyReleaseEvent(QKeyEvent *event) override;
 
 
 private:
-    Layer *layer;
-    Brush brush;
-    QPoint lastPoint; // Хранит последнюю точку для соединения линий
-    bool drawing;     // Флаг, указывающий, идет ли рисование
-
     void drawLineTo(const QPoint &endPoint);
-    std::vector<Layer> layers; // Список слоев
-    int activeLayerIndex;      // Индекс активного слоя
+    void fillArea(const QPoint &start, const QColor &fillColor);
+    bool isPointInsideCanvas(const QPoint &point) const;
+    QPointF mapToCanvasCoordinates(const QPoint &widgetPoint) const;
+    void zoomAt(const QPoint &mousePosition, double factor);
+
+    std::vector<Layer> layers;
+    int activeLayerIndex = -1;
+    Brush brush;
+    bool drawing = false;
+    QPoint lastPoint; // В координатах холста
     std::unique_ptr<Shape> currentShape;
 
-
+    // Панорамирование
+    bool spacePressed = false;
+    bool isPanning = false;
+    QPoint lastMousePosition;
+    QPointF offset;
+    double scaleFactor = 1.0;
 };
+
+
 #endif // CANVAS_H

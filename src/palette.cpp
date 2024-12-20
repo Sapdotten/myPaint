@@ -2,48 +2,140 @@
 #include <QPainter>
 #include <QMouseEvent>
 
-Palette::Palette(QWidget *parent)
-    : QWidget(parent), rectSize(40) {
-    // Задаём 20 фиксированных цветов
-    colors = {
-        Qt::black, Qt::white, Qt::red, Qt::green, Qt::blue,
-        Qt::yellow, Qt::cyan, Qt::magenta, Qt::gray, Qt::darkRed,
-        Qt::darkGreen, Qt::darkBlue, Qt::darkYellow, Qt::darkCyan,
-        Qt::darkMagenta, Qt::lightGray, QColor("#FF5733"), QColor("#33FF57"),
-        QColor("#3357FF"), QColor("#F1C40F")
-    };
+Palette::Palette(QWidget *parent) : QWidget(parent), currentColor(Qt::black) {
+    setupUI();
+    updateColor(); // Инициализируем начальный цвет
+}
 
-    // Устанавливаем фиксированный размер виджета
-    int rows = (colors.size() + 4) / 5; // 5 прямоугольников в ряд
-    setFixedSize(5 * rectSize, rows * rectSize);
+void Palette::setupUI() {
+    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+
+    // Создаем слайдеры
+    redSlider = new QSlider(Qt::Horizontal, this);
+    greenSlider = new QSlider(Qt::Horizontal, this);
+    blueSlider = new QSlider(Qt::Horizontal, this);
+    alphaSlider = new QSlider(Qt::Horizontal, this);
+
+    redSlider->setRange(0, 255);
+    greenSlider->setRange(0, 255);
+    blueSlider->setRange(0, 255);
+    alphaSlider->setRange(0, 255);
+
+    // Подписи к слайдерам
+    QLabel *redLabel = new QLabel("Красный:", this);
+    QLabel *greenLabel = new QLabel("Зеленый:", this);
+    QLabel *blueLabel = new QLabel("Синий:", this);
+    QLabel *alphaLabel = new QLabel("Прозрачность:", this);
+
+    // Цветовой квадратик для предпросмотра
+    colorPreview = new QLabel(this);
+    colorPreview->setFixedSize(100, 50);
+    colorPreview->setFrameShape(QFrame::Box);
+
+    // Пустые ячейки для сохранения цветов
+    QGridLayout *colorGrid = new QGridLayout();
+    for (int i = 0; i < 16; ++i) {
+        QLabel *colorCell = new QLabel(this);
+        colorCell->setFixedSize(30, 30);
+        colorCell->setFrameShape(QFrame::Box);
+        colorCell->setStyleSheet("background-color: rgba(0, 0, 0, 0);"); // Прозрачный фон
+        colorCell->setProperty("index", i);
+
+        // Обработка кликов мыши
+        colorCell->installEventFilter(this);
+
+        savedColors.append(Qt::transparent);
+        colorGrid->addWidget(colorCell, i / 4, i % 4);
+    }
+
+    // Добавляем элементы в интерфейс
+    mainLayout->addWidget(redLabel);
+    mainLayout->addWidget(redSlider);
+    mainLayout->addWidget(greenLabel);
+    mainLayout->addWidget(greenSlider);
+    mainLayout->addWidget(blueLabel);
+    mainLayout->addWidget(blueSlider);
+    mainLayout->addWidget(alphaLabel);
+    mainLayout->addWidget(alphaSlider);
+    mainLayout->addWidget(colorPreview);
+    mainLayout->addLayout(colorGrid);
+
+    setLayout(mainLayout);
+
+    // Устанавливаем цвета для ползунков
+    setSliderColor(redSlider, Qt::red);
+    setSliderColor(greenSlider, Qt::green);
+    setSliderColor(blueSlider, Qt::blue);
+    setSliderColor(alphaSlider, Qt::gray);
+
+    // Подключаем сигналы от слайдеров к обновлению цвета
+    connect(redSlider, &QSlider::valueChanged, this, &Palette::updateColor);
+    connect(greenSlider, &QSlider::valueChanged, this, &Palette::updateColor);
+    connect(blueSlider, &QSlider::valueChanged, this, &Palette::updateColor);
+    connect(alphaSlider, &QSlider::valueChanged, this, &Palette::updateColor);
+}
+
+void Palette::setSliderColor(QSlider *slider, const QColor &color) {
+    QString sliderStyle = QString(
+        "QSlider::groove:horizontal {"
+        "    border: 1px solid #999999;"
+        "    height: 8px;"
+        "    background: %1;"
+        "    margin: 2px 0;"
+        "}"
+        "QSlider::handle:horizontal {"
+        "    background: #ffffff;"
+        "    border: 1px solid #5c5c5c;"
+        "    width: 18px;"
+        "    margin: -2px 0;"
+        "    border-radius: 3px;"
+        "}")
+        .arg(color.name());
+
+    slider->setStyleSheet(sliderStyle);
+}
+
+void Palette::updateColor() {
+    // Обновляем текущий цвет на основе значений слайдеров
+    currentColor.setRed(redSlider->value());
+    currentColor.setGreen(greenSlider->value());
+    currentColor.setBlue(blueSlider->value());
+    currentColor.setAlpha(alphaSlider->value());
+
+    // Обновляем цвет предпросмотра
+    QPalette palette = colorPreview->palette();
+    palette.setColor(QPalette::Window, currentColor);
+    colorPreview->setAutoFillBackground(true);
+    colorPreview->setPalette(palette);
+
+    // Посылаем сигнал с обновленным цветом
+    emit colorSelected(currentColor);
+}
+
+bool Palette::eventFilter(QObject *watched, QEvent *event) {
+    if (event->type() == QEvent::MouseButtonPress) {
+        QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
+        QLabel *colorCell = qobject_cast<QLabel *>(watched);
+        if (colorCell) {
+            int index = colorCell->property("index").toInt();
+            if (mouseEvent->button() == Qt::LeftButton) {
+                // Взять цвет из ячейки
+                QColor cellColor = savedColors[index];
+                redSlider->setValue(cellColor.red());
+                greenSlider->setValue(cellColor.green());
+                blueSlider->setValue(cellColor.blue());
+                alphaSlider->setValue(cellColor.alpha());
+            } else if (mouseEvent->button() == Qt::RightButton) {
+                // Сохранить цвет в ячейку
+                savedColors[index] = currentColor;
+                colorCell->setStyleSheet(QString("background-color: %1;").arg(currentColor.name(QColor::HexArgb)));
+            }
+        }
+        return true;
+    }
+    return QWidget::eventFilter(watched, event);
 }
 
 void Palette::paintEvent(QPaintEvent *event) {
-    QPainter painter(this);
-
-    // Рисуем прямоугольники с цветами
-    for (size_t i = 0; i < colors.size(); ++i) {
-        int row = i / 5;
-        int col = i % 5;
-
-        QRect rect(col * rectSize, row * rectSize, rectSize, rectSize);
-        painter.fillRect(rect, colors[i]);
-        painter.setPen(Qt::black); // Рамка
-        painter.drawRect(rect);
-    }
-}
-
-void Palette::mousePressEvent(QMouseEvent *event) {
-    int index = getColorIndexAt(event->pos());
-    if (index >= 0 && index < static_cast<int>(colors.size())) {
-        emit colorSelected(colors[index]); // Отправляем сигнал с выбранным цветом
-    }
-}
-
-int Palette::getColorIndexAt(const QPoint &point) const {
-    int col = point.x() / rectSize;
-    int row = point.y() / rectSize;
-
-    int index = row * 5 + col; // Рассчитываем индекс
-    return (index < static_cast<int>(colors.size())) ? index : -1;
+    QWidget::paintEvent(event);
 }

@@ -58,6 +58,8 @@ public:
         QPushButton *rectButton = new QPushButton("Прямоугольник", this);
         QPushButton *circleButton = new QPushButton("Круг", this);
         QPushButton *triangleButton = new QPushButton("Треугольник", this);
+        QPushButton *fillButton = new QPushButton("Заливка", this);
+        layout->addWidget(fillButton);
 
         // Добавляем кнопки в макет
         layout->addWidget(brushButton);
@@ -91,6 +93,11 @@ public:
         connect(triangleButton, &QPushButton::clicked, this, [this, canvas]() {
             canvas->setToolType(Brush::TriangleTool);
         });
+
+
+        connect(fillButton, &QPushButton::clicked, this, [this, canvas]() {
+            canvas->setToolType(Brush::FillTool);
+        });
     }
 
 private:
@@ -109,8 +116,6 @@ public:
         // Подключаем сигнал палитры к изменению цвета кисти
         connect(palette, &Palette::colorSelected, canvas, &Canvas::setBrushColor);
 
-        QPushButton *button = new QPushButton("Palette", this);
-        layout->addWidget(button);
     }
 
 private:
@@ -133,6 +138,15 @@ public:
         layout->addWidget(brushControl);
         layout->addWidget(instrumentsControl);
 
+        QHBoxLayout *zoomLayout = new QHBoxLayout();
+        QPushButton *zoomInButton = new QPushButton("Увеличить", this);
+        QPushButton *zoomOutButton = new QPushButton("Уменьшить", this);
+        auto zoomLabel = new QLabel("Масштаб: 100%", this);
+        zoomLayout->addWidget(zoomInButton);
+        zoomLayout->addWidget(zoomOutButton);
+        // zoomLayout->addWidget(zoomLabel);
+
+        layout->addLayout(zoomLayout);
         // Кнопка для сохранения
         QPushButton *saveButton = new QPushButton("Сохранить холст", this);
         layout->addWidget(saveButton);
@@ -140,10 +154,33 @@ public:
         connect(saveButton, &QPushButton::clicked, this, [this, canvas]() {
             canvas->saveToFile(); // Вызов метода сохранения
         });
+        connect(zoomInButton, &QPushButton::clicked, this, [this, canvas]() {
+            canvas->zoomIn();
+            // updateZoomLabel();
+        });
+
+        connect(zoomOutButton, &QPushButton::clicked, this, [this, canvas]() {
+            canvas->zoomOut();
+            // updateZoomLabel();
+        });
+        QPushButton *openFileButton = new QPushButton("Открыть файл", this);
+        layout->addWidget(openFileButton);
+
+        connect(openFileButton, &QPushButton::clicked, this, [this, canvas]() {
+            QString fileName = QFileDialog::getOpenFileName(this, "Открыть изображение", "",
+                                                            "Изображения (*.png *.jpeg *.jpg)");
+            if (!fileName.isEmpty()) {
+                canvas->openImageAsLayer(fileName);
+            }
+        });
     }
 
 private:
     Canvas *canvas;
+    // QLabel *zoomLabel = new QLabel("Масштаб: 100%", this);
+    // void updateZoomLabel() {
+    //     zoomLabel->setText(QString("Масштаб: %1%").arg(static_cast<int>(canvas->getScaleFactor() * 100)));
+    // }
 };
 
 
@@ -199,7 +236,7 @@ public:
             updateLayerList();
         });
 
-
+        updateLayerList();
         setLayout(layout);
     }
 
@@ -230,7 +267,7 @@ private:
             QString layerName = layerList->item(i)->text();
             layerName = layerName.replace(" (Скрыт)", ""); // Убираем метку скрытого слоя
 
-            for (const auto &layer : canvas->getLayers()) {
+            for (const auto &layer: canvas->getLayers()) {
                 if (layer.getName() == layerName) {
                     newOrder.push_back(layer);
                     break;
@@ -248,7 +285,6 @@ private:
             }
         }
     }
-
 };
 
 
@@ -272,6 +308,10 @@ public:
         InstrumentsAndBrushControl *instrumentsAndBrushControl = new InstrumentsAndBrushControl(canvas, leftPanel);
         LayerControl *layerControl = new LayerControl(canvas, leftPanel);
 
+
+
+
+
         leftLayout->addWidget(layerControl);
         leftLayout->addWidget(instrumentsAndBrushControl);
 
@@ -280,13 +320,13 @@ public:
         splitter->addWidget(canvas);
 
         // Настроим разделитель, чтобы левая панель занимала определенное место
-        splitter->setSizes({200, 600}); // 200 пикселей для панели и 600 для холста
+        splitter->setSizes({200, 800}); // 200 пикселей для панели и 800 для холста
 
         // Устанавливаем центральный виджет в окно
         setCentralWidget(splitter);
 
-        setWindowTitle("Минимальный графический редактор");
-        setFixedSize(800, 600);
+        setWindowTitle("Графический редактор");
+        setFixedSize(1000, 900);
     }
 };
 

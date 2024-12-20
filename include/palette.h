@@ -2,8 +2,11 @@
 #define PALETTE_H
 
 #include <QWidget>
+#include <QSlider>
+#include <QLabel>
 #include <QColor>
-#include <vector>
+#include <QGridLayout>
+#include <QVector>
 
 class Palette : public QWidget {
     Q_OBJECT
@@ -15,20 +18,25 @@ public:
     signals:
         void colorSelected(const QColor &color); // Сигнал для передачи выбранного цвета
 
-protected:
-    void paintEvent(QPaintEvent *event) override;
-    void mousePressEvent(QMouseEvent *event) override;
-
 private:
-    const int MAX_COLOR_VALUE = 255;
-    std::vector<QColor> colors; // Список цветов
-    int rectSize;              // Размер одного прямоугольника
+    QSlider *redSlider;
+    QSlider *greenSlider;
+    QSlider *blueSlider;
+    QSlider *alphaSlider;
+    QLabel *colorPreview;
+    QVector<QColor> savedColors; // Сохраненные цвета
 
-    int getColorIndexAt(const QPoint &point) const; // Возвращает индекс цвета по координатам
-    int getRedValue(const float theta) const;
-    int getGreenValue(const float theta) const;
-    int getBlueValue(const float theta) const;
-    void drawColorCircle();
+    QColor currentColor; // Объявление текущего цвета
+
+    void setupUI(); // Устанавливает интерфейс
+    void setSliderColor(QSlider *slider, const QColor &color); // Устанавливает стиль ползунков
+
+    private slots:
+        void updateColor(); // Обновляет текущий цвет
+
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override; // Обрабатывает клики на ячейки
+    void paintEvent(QPaintEvent *event) override; // Для возможной доработки отрисовки
 };
 
 #endif // PALETTE_H

@@ -11,7 +11,8 @@ public:
         LineTool,       // Линия
         RectangleTool,  // Прямоугольник
         CircleTool,     // Круг
-        TriangleTool    // Треугольник
+        TriangleTool,    // Треугольник
+        FillTool // Заливка
     };
 
     Brush(int thickness = 1, QColor color = Qt::black, ToolType toolType = BrushTool)
@@ -28,6 +29,7 @@ public:
     ToolType getToolType() const;
 
     void setToolType(ToolType newToolType);
+
 
 private:
     int thickness;       // Толщина кисти или границы фигуры
