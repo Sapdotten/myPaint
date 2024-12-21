@@ -38,6 +38,19 @@ public:
             canvas->setBrushThickness(value); // Устанавливаем новую толщину
             thicknessLabel->setText(QString::number(value)); // Обновляем отображение толщины
         });
+        QLabel *polygonSidesLabel = new QLabel("Стороны многоугольника: 3", this);
+        QSlider *polygonSidesSlider = new QSlider(Qt::Horizontal, this);
+        polygonSidesSlider->setRange(3, 12); // Минимальное и максимальное количество сторон
+        polygonSidesSlider->setValue(3); // Значение по умолчанию
+
+        layout->addWidget(polygonSidesLabel);
+        layout->addWidget(polygonSidesSlider);
+
+        // Подключаем изменение значения слайдера
+        connect(polygonSidesSlider, &QSlider::valueChanged, this, [this, polygonSidesLabel, canvas](int value) {
+            polygonSidesLabel->setText(QString("Стороны многоугольника: %1").arg(value));
+            canvas->setPolygonSides(value);
+        });
     }
 
 private:
@@ -59,9 +72,12 @@ public:
         QPushButton *circleButton = new QPushButton("Круг", this);
         QPushButton *triangleButton = new QPushButton("Треугольник", this);
         QPushButton *fillButton = new QPushButton("Заливка", this);
-        layout->addWidget(fillButton);
+        QPushButton *polylineButton = new QPushButton("Ломаная", this);
+        QPushButton *polygonButton = new QPushButton("Многоугольник", this);
 
-        // Добавляем кнопки в макет
+        layout->addWidget(polygonButton);
+        layout->addWidget(polylineButton);
+        layout->addWidget(fillButton);
         layout->addWidget(brushButton);
         layout->addWidget(eraserButton);
         layout->addWidget(lineButton);
@@ -97,6 +113,13 @@ public:
 
         connect(fillButton, &QPushButton::clicked, this, [this, canvas]() {
             canvas->setToolType(Brush::FillTool);
+        });
+        connect(polylineButton, &QPushButton::clicked, this, [this, canvas]() {
+            canvas->setToolType(Brush::PolylineTool);
+        });
+
+        connect(polygonButton, &QPushButton::clicked, this, [this, canvas]() {
+            canvas->setToolType(Brush::PolygonTool);
         });
     }
 
@@ -137,8 +160,7 @@ public:
         layout->addWidget(paletteControl);
         layout->addWidget(brushControl);
         layout->addWidget(instrumentsControl);
-        QPushButton *polylineButton = new QPushButton("Ломаная", this);
-        layout->addWidget(polylineButton);
+
         QHBoxLayout *zoomLayout = new QHBoxLayout();
         QPushButton *zoomInButton = new QPushButton("Увеличить", this);
         QPushButton *zoomOutButton = new QPushButton("Уменьшить", this);
@@ -176,17 +198,11 @@ public:
         });
 
 
-        connect(polylineButton, &QPushButton::clicked, this, [this, canvas]() {
-            canvas->setToolType(Brush::PolylineTool);
-        });
+
     }
 
 private:
     Canvas *canvas;
-    // QLabel *zoomLabel = new QLabel("Масштаб: 100%", this);
-    // void updateZoomLabel() {
-    //     zoomLabel->setText(QString("Масштаб: %1%").arg(static_cast<int>(canvas->getScaleFactor() * 100)));
-    // }
 };
 
 
@@ -326,13 +342,13 @@ public:
         splitter->addWidget(canvas);
 
         // Настроим разделитель, чтобы левая панель занимала определенное место
-        splitter->setSizes({200, 800}); // 200 пикселей для панели и 800 для холста
+        splitter->setSizes({200, 1000});
 
         // Устанавливаем центральный виджет в окно
         setCentralWidget(splitter);
 
         setWindowTitle("Графический редактор");
-        setFixedSize(1000, 900);
+        setFixedSize(1200, 1000);
     }
 };
 

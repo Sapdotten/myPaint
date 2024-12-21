@@ -17,6 +17,7 @@
 #include "triangleshape.h"
 #include "circleshape.h"
 #include "lineshape.h"
+#include "polygonshape.h"
 #include "QMessageBox"
 #include <QGraphicsDropShadowEffect>
 
@@ -42,6 +43,7 @@ public:
     int getScaleFactor() const;
     void openImageAsLayer(const QString &filePath);
     void mouseDoubleClickEvent(QMouseEvent *event);
+    void setPolygonSides(int sides);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -54,6 +56,7 @@ protected:
 
 
 private:
+    int polygonSides = 3; // По умолчанию треугольник
     QVector<QPoint> polylinePoints; // Точки текущей ломаной
     bool isDrawingPolyline = false; // Флаг рисования ломаной
     void drawLineTo(const QPoint &endPoint);

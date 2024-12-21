@@ -10,7 +10,7 @@ Canvas::Canvas(QWidget *parent)
     : QWidget(parent),
       brush(5, Qt::black, Brush::BrushTool),
       drawing(false) {
-    setFixedSize(800, 800);
+    setFixedSize(1000, 1000);
     setFocusPolicy(Qt::StrongFocus); // Важно для обработки пробела
     addLayer("Default");
 }
@@ -83,8 +83,13 @@ void Canvas::mousePressEvent(QMouseEvent *event) {
                     polylinePoints.append(canvasPoint.toPoint()); // Добавляем следующую точку
                 }
 
-            update(); // Перерисовываем холст
-            return;
+
+                update(); // Перерисовываем холст
+                return;
+            case Brush::PolygonTool:
+                currentShape = std::make_unique<PolygonShape>(brush.getColor(), brush.getThickness(), polygonSides);
+                currentShape->setStartPoint(canvasPoint.toPoint());
+                break;
             default:
                 lastPoint = canvasPoint.toPoint();
                 drawing = true;
@@ -123,7 +128,7 @@ void Canvas::mouseReleaseEvent(QMouseEvent *event) {
         QPointF canvasPoint = mapToCanvasCoordinates(event->pos());
         currentShape->setEndPoint(canvasPoint.toPoint());
 
-        if (activeLayerIndex >= 0 && activeLayerIndex < (int)layers.size()) {
+        if (activeLayerIndex >= 0 && activeLayerIndex < (int) layers.size()) {
             QImage &image = layers[activeLayerIndex].getImage();
             QPainter painter(&image);
             currentShape->draw(painter);
@@ -142,7 +147,7 @@ void Canvas::paintEvent(QPaintEvent *event) {
     painter.translate(offset);
     painter.scale(scaleFactor, scaleFactor);
 
-    for (auto &layer : layers) {
+    for (auto &layer: layers) {
         if (layer.isVisible()) {
             painter.drawImage(0, 0, layer.getImage());
         }
@@ -160,7 +165,7 @@ void Canvas::paintEvent(QPaintEvent *event) {
 }
 
 void Canvas::drawLineTo(const QPoint &endPoint) {
-    if (activeLayerIndex >= 0 && activeLayerIndex < (int)layers.size()) {
+    if (activeLayerIndex >= 0 && activeLayerIndex < (int) layers.size()) {
         QImage &image = layers[activeLayerIndex].getImage();
         QPainter painter(&image);
 
@@ -185,12 +190,12 @@ void Canvas::setToolType(Brush::ToolType tool) {
 void Canvas::addLayer(const QString &name) {
     static int layerIdCounter = 0;
     layers.emplace_back(width(), height(), name, layerIdCounter++);
-    activeLayerIndex = (int)layers.size() - 1;
+    activeLayerIndex = (int) layers.size() - 1;
     update();
 }
 
 void Canvas::toggleLayerVisibility(int index) {
-    if (index >= 0 && index < (int)layers.size()) {
+    if (index >= 0 && index < (int) layers.size()) {
         layers[index].setVisible(!layers[index].isVisible());
         update();
     }
@@ -201,7 +206,7 @@ const std::vector<Layer> &Canvas::getLayers() const {
 }
 
 void Canvas::setActiveLayer(int index) {
-    if (index >= 0 && index < (int)layers.size()) {
+    if (index >= 0 && index < (int) layers.size()) {
         activeLayerIndex = index;
         update();
     }
@@ -217,10 +222,10 @@ void Canvas::setLayers(const std::vector<Layer> &newLayers) {
 }
 
 void Canvas::removeLayer(int index) {
-    if (index >= 0 && index < (int)layers.size()) {
+    if (index >= 0 && index < (int) layers.size()) {
         layers.erase(layers.begin() + index);
-        if (activeLayerIndex >= (int)layers.size()) {
-            activeLayerIndex = (int)layers.size() - 1;
+        if (activeLayerIndex >= (int) layers.size()) {
+            activeLayerIndex = (int) layers.size() - 1;
         }
         update();
     }
@@ -238,7 +243,7 @@ void Canvas::saveToFile() {
 }
 
 void Canvas::fillArea(const QPoint &start, const QColor &fillColor) {
-    if (!isPointInsideCanvas(start) || activeLayerIndex < 0 || activeLayerIndex >= (int)layers.size()) return;
+    if (!isPointInsideCanvas(start) || activeLayerIndex < 0 || activeLayerIndex >= (int) layers.size()) return;
 
     QImage &layerImage = layers[activeLayerIndex].getImage();
     QColor targetColor = layerImage.pixelColor(start);
@@ -313,6 +318,7 @@ void Canvas::openImageAsLayer(const QString &filePath) {
     activeLayerIndex = layers.size() - 1; // Новый слой становится активным
     update(); // Обновляем холст
 }
+
 void Canvas::mouseDoubleClickEvent(QMouseEvent *event) {
     if (brush.getToolType() == Brush::PolylineTool && isDrawingPolyline) {
         if (activeLayerIndex >= 0 && activeLayerIndex < layers.size()) {
@@ -330,6 +336,8 @@ void Canvas::mouseDoubleClickEvent(QMouseEvent *event) {
         polylinePoints.clear(); // Сбрасываем состояние
         update();
     }
-
 }
 
+void Canvas::setPolygonSides(int sides) {
+    polygonSides = sides;
+}
