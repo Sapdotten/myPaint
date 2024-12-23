@@ -4,15 +4,15 @@ PolygonShape::PolygonShape(const QColor &color, int thickness, int sides)
     : color(color), thickness(thickness), sides(sides) {
 }
 
-void PolygonShape::setStartPoint(const QPoint &point) override {
+void PolygonShape::setStartPoint(const QPoint &point) {
     center = point;
 }
 
-void PolygonShape::setEndPoint(const QPoint &point) override {
+void PolygonShape::setEndPoint(const QPoint &point) {
     radius = QLineF(center, point).length();
 }
 
-void PolygonShape::draw(QPainter &painter) const override {
+void PolygonShape::draw(QPainter &painter) const {
     if (sides < 3 || radius <= 0) return;
 
     QPolygon polygon;
