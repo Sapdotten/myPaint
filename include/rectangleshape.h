@@ -1,25 +1,17 @@
 #ifndef RECTANGLESHAPE_H
 #define RECTANGLESHAPE_H
 
-#include "Shape.h"
+#include "shape.h"
 
 class RectangleShape : public Shape {
 public:
-    RectangleShape(const QColor &color, int thickness)
-        : color(color), thickness(thickness) {}
+    RectangleShape(const QColor &color, int thickness);
 
-    void draw(QPainter &painter) const override {
-        painter.setPen(QPen(color, thickness, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-        painter.drawRect(QRect(startPoint, endPoint));
-    }
+    void draw(QPainter &painter) const override;
 
-    void setStartPoint(const QPoint &point) override {
-        startPoint = point;
-    }
+    void setStartPoint(const QPoint &point) override;
 
-    void setEndPoint(const QPoint &point) override {
-        endPoint = point;
-    }
+    void setEndPoint(const QPoint &point) override;
 
 private:
     QPoint startPoint, endPoint;

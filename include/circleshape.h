@@ -5,23 +5,13 @@
 
 class CircleShape : public Shape {
 public:
-    CircleShape(const QColor &color, int thickness)
-        : color(color), thickness(thickness) {}
+    CircleShape(const QColor &color, int thickness);
 
-    void draw(QPainter &painter) const override {
-        painter.setPen(QPen(color, thickness, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-        int radius = qSqrt(qPow(endPoint.x() - startPoint.x(), 2) +
-                           qPow(endPoint.y() - startPoint.y(), 2));
-        painter.drawEllipse(startPoint, radius, radius);
-    }
+    void draw(QPainter &painter) const override;
 
-    void setStartPoint(const QPoint &point) override {
-        startPoint = point;
-    }
+    void setStartPoint(const QPoint &point) override;
 
-    void setEndPoint(const QPoint &point) override {
-        endPoint = point;
-    }
+    void setEndPoint(const QPoint &point) override;
 
 private:
     QPoint startPoint, endPoint;

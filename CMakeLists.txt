@@ -28,6 +28,11 @@ add_executable(kursach
         include/circleshape.h
         include/triangleshape.h
         include/polygonshape.h
+        src/circleshape.cpp
+        src/lineshape.cpp
+        src/polygonshape.cpp
+        src/rectangleshape.cpp
+        src/triangleshape.cpp
 )
 
 target_link_libraries(kursach Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Widgets)
