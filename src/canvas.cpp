@@ -1,4 +1,3 @@
-// canvas.cpp
 #include "../include/canvas.h"
 #include <QApplication>
 #include <QDebug>
@@ -37,7 +36,6 @@ void Canvas::keyPressEvent(QKeyEvent *event) {
 void Canvas::keyReleaseEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_Space) {
         spacePressed = false;
-        // Если отпустили пробел во время панорамирования — завершаем панорамирование
         if (isPanning) {
             isPanning = false;
         }
@@ -78,13 +76,13 @@ void Canvas::mousePressEvent(QMouseEvent *event) {
                 if (!isDrawingPolyline) {
                     isDrawingPolyline = true;
                     polylinePoints.clear();
-                    polylinePoints.append(canvasPoint.toPoint()); // Начальная точка
+                    polylinePoints.append(canvasPoint.toPoint());
                 } else {
-                    polylinePoints.append(canvasPoint.toPoint()); // Добавляем следующую точку
+                    polylinePoints.append(canvasPoint.toPoint());
                 }
 
 
-                update(); // Перерисовываем холст
+                update();
                 return;
             case Brush::PolygonTool:
                 currentShape = std::make_unique<PolygonShape>(brush.getColor(), brush.getThickness(), polygonSides);
@@ -310,13 +308,13 @@ void Canvas::openImageAsLayer(const QString &filePath) {
         return;
     }
 
-    // Добавляем изображение как новый слой
-    QString layerName = QFileInfo(filePath).fileName(); // Имя слоя совпадает с именем файла
-    layers.emplace_back(image.width(), image.height(), layerName);
-    layers.back().getImage() = image; // Загружаем изображение в слой
 
-    activeLayerIndex = layers.size() - 1; // Новый слой становится активным
-    update(); // Обновляем холст
+    QString layerName = QFileInfo(filePath).fileName();
+    layers.emplace_back(image.width(), image.height(), layerName);
+    layers.back().getImage() = image;
+
+    activeLayerIndex = layers.size() - 1;
+    update();
 }
 
 void Canvas::mouseDoubleClickEvent(QMouseEvent *event) {
@@ -326,14 +324,13 @@ void Canvas::mouseDoubleClickEvent(QMouseEvent *event) {
             QPainter painter(&image);
             painter.setPen(QPen(brush.getColor(), brush.getThickness(), Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
 
-            // Рисуем ломаную на активном слое
             for (int i = 0; i < polylinePoints.size() - 1; ++i) {
                 painter.drawLine(polylinePoints[i], polylinePoints[i + 1]);
             }
         }
 
         isDrawingPolyline = false;
-        polylinePoints.clear(); // Сбрасываем состояние
+        polylinePoints.clear();
         update();
     }
 }

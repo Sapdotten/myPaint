@@ -3,7 +3,7 @@
 Layer::Layer(int width, int height, const QString &name,int id)
     : image(width, height, QImage::Format_ARGB32_Premultiplied),
       visible(true), name(name), id(id) {
-    image.fill(Qt::transparent); // Прозрачный фон по умолчанию
+    image.fill(Qt::transparent);
 }
 
 void Layer::drawPixel(const QPoint &point, const QColor &color, int thickness) {

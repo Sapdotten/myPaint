@@ -16,7 +16,7 @@ public:
     ~Palette() override = default;
 
     signals:
-        void colorSelected(const QColor &color); // Сигнал для передачи выбранного цвета
+        void colorSelected(const QColor &color);
 
 private:
     QSlider *redSlider;
@@ -24,19 +24,19 @@ private:
     QSlider *blueSlider;
     QSlider *alphaSlider;
     QLabel *colorPreview;
-    QVector<QColor> savedColors; // Сохраненные цвета
+    QVector<QColor> savedColors;
 
-    QColor currentColor; // Объявление текущего цвета
+    QColor currentColor;
 
-    void setupUI(); // Устанавливает интерфейс
-    void setSliderColor(QSlider *slider, const QColor &color); // Устанавливает стиль ползунков
+    void setupUI();
+    void setSliderColor(QSlider *slider, const QColor &color);
 
     private slots:
-        void updateColor(); // Обновляет текущий цвет
+        void updateColor();
 
 protected:
-    bool eventFilter(QObject *watched, QEvent *event) override; // Обрабатывает клики на ячейки
-    void paintEvent(QPaintEvent *event) override; // Для возможной доработки отрисовки
+    bool eventFilter(QObject *watched, QEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
 };
 
 #endif // PALETTE_H

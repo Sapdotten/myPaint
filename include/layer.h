@@ -13,7 +13,6 @@ public:
     void drawPixel(const QPoint &point, const QColor &color, int thickness);
     QImage& getImage();
 
-    // Новая функциональность
     bool isVisible() const;
     bool isActive() const;
     void setActive(bool active);
@@ -23,9 +22,9 @@ public:
     int getId() const;
 
 private:
-    QImage image;      // Изображение слоя
-    bool visible;      // Видимость слоя
-    QString name;      // Название слоя
+    QImage image;
+    bool visible;
+    QString name;
     bool active;
     int id;
 };

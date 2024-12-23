@@ -56,9 +56,9 @@ protected:
 
 
 private:
-    int polygonSides = 3; // По умолчанию треугольник
-    QVector<QPoint> polylinePoints; // Точки текущей ломаной
-    bool isDrawingPolyline = false; // Флаг рисования ломаной
+    int polygonSides = 3;
+    QVector<QPoint> polylinePoints;
+    bool isDrawingPolyline = false;
     void drawLineTo(const QPoint &endPoint);
     void fillArea(const QPoint &start, const QColor &fillColor);
     bool isPointInsideCanvas(const QPoint &point) const;
@@ -69,10 +69,10 @@ private:
     int activeLayerIndex = -1;
     Brush brush;
     bool drawing = false;
-    QPoint lastPoint; // В координатах холста
+    QPoint lastPoint;
     std::unique_ptr<Shape> currentShape;
 
-    // Панорамирование
+
     bool spacePressed = false;
     bool isPanning = false;
     QPoint lastMousePosition;

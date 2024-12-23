@@ -6,11 +6,8 @@
 class CircleShape : public Shape {
 public:
     CircleShape(const QColor &color, int thickness);
-
     void draw(QPainter &painter) const override;
-
     void setStartPoint(const QPoint &point) override;
-
     void setEndPoint(const QPoint &point) override;
 
 private:

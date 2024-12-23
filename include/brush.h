@@ -6,13 +6,13 @@
 class Brush {
 public:
     enum ToolType {
-        BrushTool, // Обычная кисть
-        EraserTool, // Ластик
-        LineTool, // Линия
-        RectangleTool, // Прямоугольник
-        CircleTool, // Круг
-        TriangleTool, // Треугольник
-        FillTool, // Заливка
+        BrushTool,
+        EraserTool,
+        LineTool,
+        RectangleTool,
+        CircleTool,
+        TriangleTool,
+        FillTool,
         PolylineTool,
         PolygonTool
     };
@@ -20,7 +20,6 @@ public:
     Brush(int thickness = 1, QColor color = Qt::black, ToolType toolType = BrushTool)
         : thickness(thickness), color(color), toolType(toolType) {
     }
-
     int getThickness() const;
 
     void setThickness(int newThickness);
@@ -34,9 +33,9 @@ public:
     void setToolType(ToolType newToolType);
 
 private:
-    int thickness; // Толщина кисти или границы фигуры
-    QColor color; // Цвет кисти или границы фигуры
-    ToolType toolType; // Текущий инструмент
+    int thickness;
+    QColor color;
+    ToolType toolType;
 };
 
 #endif // BRUSH_H

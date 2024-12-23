@@ -8,7 +8,7 @@ class Shape {
 public:
     virtual ~Shape() = default;
 
-    virtual void draw(QPainter &painter) const = 0; // Абстрактный метод для рисования
+    virtual void draw(QPainter &painter) const = 0;
     virtual void setStartPoint(const QPoint &point) = 0;
     virtual void setEndPoint(const QPoint &point) = 0;
 };

@@ -1,7 +1,3 @@
-//
-// Created by Alexandra on 21.12.2024.
-//
-
 #ifndef POLYGONSHAPE_H
 #define POLYGONSHAPE_H
 #include <QWidget>
